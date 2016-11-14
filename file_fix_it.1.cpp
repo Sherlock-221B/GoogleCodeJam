@@ -3,14 +3,53 @@
 #include <vector>
 using namespace std;
 
-struct dir
+class dir
 {
+  public:
     string name;
     dir *firstChild;
     dir *nextSibling;
 
     dir(string name) : name(name), firstChild(NULL), nextSibling(NULL)
     {
+    }
+    dir *add_child(string dirname)
+    {
+        dir *child = new dir(dirname);
+        if (firstChild == NULL)
+        {
+            firstChild = child;
+        }
+        else
+        {
+            dir *temp = firstChild;
+            while (temp->nextSibling != NULL)
+                temp = temp->nextSibling;
+            temp->nextSibling = child;
+        }
+        return child;
+    }
+
+    dir *find_dir(string dirname)
+    {
+        dir *temp = firstChild;
+        while (temp != NULL)
+        {
+            if (temp->name == dirname)
+                return temp;
+            temp = temp->nextSibling;
+        }
+        return NULL;
+    }
+
+    void delete_all()
+    {
+        if (firstChild != NULL)
+            firstChild->delete_all();
+        if (nextSibling != NULL)
+            nextSibling->delete_all();
+        firstChild = nextSibling = NULL;
+        delete this;
     }
 };
 
@@ -30,45 +69,21 @@ void split(vector<string> &v, string path)
     v.push_back(path.substr(start, end - start));
 }
 
-dir *find_dir(dir *d, string name)
-{
-    dir *temp = d->firstChild;
-    while (temp != NULL)
-    {
-        if (temp->name == name)
-            return temp;
-        temp = temp->nextSibling;
-    }
-    return NULL;
-}
-
 int process(dir *d, vector<string> &v)
 {
     int count = 0;
     for (int i = 0; i < v.size(); i++)
     {
-        dir *child = find_dir(d, v[i]); //check if v[i] exists inside d folder
+        dir *child = d->find_dir(v[i]); //check if v[i] exists inside d folder
         if (child != NULL)
         {
             d = child;
-            cout << "Exist : " << v[i] << endl;
         }
         else
         {
-            child = new dir(v[i]);
-            if (d->firstChild == NULL)
-            {
-                d->firstChild = child;
-            }
-            else
-            {
-                dir *temp = d->firstChild;
-                while (temp->nextSibling != NULL)
-                    temp = temp->nextSibling;
-                temp->nextSibling = child;
-            }
+            child = d->add_child(v[i]);
+            d = child;
             count++;
-            cout << "Creating : " << v[i] << " & counting : " << count << endl;
         }
     }
     return count;
@@ -76,17 +91,16 @@ int process(dir *d, vector<string> &v)
 
 int main()
 {
-    dir *root = new dir("/");
     int T, N, M, Case = 0;
     string path;
     cin >> T;
     //run through test cases
     while (T--)
     {
+        dir *root = new dir("/");
         Case++;
         cin >> N >> M;
         //take already existing directory paths and store them
-        cout << "OLD : " << endl;
         while (N--)
         {
             cin >> path;
@@ -96,7 +110,6 @@ int main()
         }
         //take new directories AND store them AND increment count while storing
         int count = 0;
-        cout << "NEW : " << endl;
         while (M--)
         {
             cin >> path;
@@ -105,6 +118,7 @@ int main()
             count += process(root, v);
         }
         cout << "Case #" << Case << ": " << count << endl;
+        root->delete_all();
     }
 
     return 0;

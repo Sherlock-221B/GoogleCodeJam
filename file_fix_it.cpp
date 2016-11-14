@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 using namespace std;
@@ -89,6 +90,14 @@ int main()
 {
     int T, N, M, Case = 0;
     string path;
+    ifstream in("A-large-practice.in");
+    streambuf *inbuf=cin.rdbuf();
+    cin.rdbuf(in.rdbuf());
+
+    ofstream out("output.txt");
+    streambuf *outbuf=cout.rdbuf();
+    cout.rdbuf(out.rdbuf());
+
     cin >> T;
     //run through test cases
     while (T--)
@@ -116,6 +125,8 @@ int main()
         cout << "Case #" << Case << ": " << count << endl;
         root->delete_all();
     }
+    cin.rdbuf(inbuf);
+    cout.rdbuf(outbuf);
 
     return 0;
 }

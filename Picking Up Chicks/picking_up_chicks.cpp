@@ -2,21 +2,81 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
-
-int main(){
-    int C,N,K,B,T;
-    cin>>C;
-    while(C--){ //test cases
-       cin>>N>>K>>B>>T;
-       vector<int> X(N),V(N); //start positions and speeds
-       for(int i=0;i<N;i++) cin>>X[i];
-       for(int i=0;i<N;i++) cin>>V[i];
-       double time_to_finish;
-       int count=0;
-       
+class cmp{
+    public:
+    bool operator() (const pair<int,int> &a,const pair<int,int> &b){
+        if(a.first==1 && b.first==0) return true;
+        else if(a.first==0 && b.first==1) return false;
+        else return a.second<b.second;
     }
+}cmp;
+
+int main()
+{
+    ifstream in("B-large-practice.in");
+    streambuf *inbuf=cin.rdbuf();
+    cin.rdbuf(in.rdbuf());
+
+    ofstream out("output-large.txt");
+    streambuf *outbuf=cout.rdbuf();
+    cout.rdbuf(out.rdbuf());
+
+
+    int C, N, K, B, T, Case = 0;
+    cin >> C;
+    while (C--)
+    { //test cases
+        Case++;
+        cin >> N >> K >> B >> T;                  //number of chicks(N),at least K chicks,Barn(B),Time(T)
+        vector<int> X(N), V(N); //start positions and speeds
+        //pair : first->whether that chick reaches in time, second->swaps required.
+        vector<pair<int,int> > swap_count(N); //swap count of each chick 
+        for (int i = 0; i < N; i++)
+            cin >> X[i];
+        for (int i = 0; i < N; i++)
+            cin >> V[i];
+        vector<double> time_to_finish(N);
+        int count = 0;
+        for (int i = 0; i < N; i++)
+        {
+            time_to_finish[i] = (B - X[i]) / (double)V[i];
+            if (time_to_finish[i] <= (double)T)
+            {
+                count++;
+                swap_count[i]=make_pair(1,0);
+            }else{
+                swap_count[i]=make_pair(0,0);
+            }
+        }
+        if (count < K)
+        {
+            cout << "Case #" << Case << ": IMPOSSIBLE" << endl;
+        }
+        else
+        {
+            for(int i=0;i<N;i++){
+                if(time_to_finish[i]<=T){
+                    for(int j=0;j<N;j++){
+                        if(time_to_finish[j]>T && X[j]>X[i]){
+                            swap_count[i].second++;
+                        }
+                    }
+                }
+            }
+
+            sort(swap_count.begin(),swap_count.end(),cmp);
+            //count reused
+            count=0;
+            for(int i=0;i<K;i++) count+=swap_count[i].second;
+            cout << "Case #" << Case << ": "<< count << endl;
+        }
+    }
+
+    cin.rdbuf(inbuf);
+    cout.rdbuf(outbuf);
 
     return 0;
 }
